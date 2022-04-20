@@ -1,0 +1,68 @@
+body {
+  margin: 0;
+  padding: 0;
+  white-space: nowrap;
+  background-color:rgb(78, 91, 104);
+}
+
+.divOne {
+  background-color: bisque;
+  color: aquamarine;
+}
+
+.divTwo {
+  background-color: aquamarine;
+  color: bisque;
+}
+
+h1 {
+  text-align: center;
+}
+
+div.main {
+  padding: 0;
+  text-shadow: 1px 1px 2px black;
+}
+
+@media (max-width: 1099px) {
+
+  div.main {
+    font-size: 3vw;
+  }
+
+  div.text {
+    height: 25vh;
+  }
+
+  h1 {
+    margin: 0;
+  }
+
+}
+
+@media (min-width: 1100px) {
+
+  div.main {
+    border-radius: 2vw;
+    font-size: 1.5vw;
+    margin: 10vh 5%;
+    height: 77vh;
+    width: 40%;
+    display: inline-block;
+    position: relative;
+  }
+
+  div.text {
+    position: absolute;
+    top: 15vh;
+    width: 100%;
+  }
+
+  body>div.divTwo.main>div:nth-child(1) {
+    top: 5vh;
+  }
+
+  body>div.divTwo.main>div:nth-child(2) {
+    top: 35vh;
+  }
+}
