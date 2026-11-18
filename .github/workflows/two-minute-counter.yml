@@ -1,0 +1,57 @@
+name: Two-minute continuation counter
+run-name: Counter ${{ inputs.counter || '1' }}
+
+on:
+  push:
+    paths:
+      - .github/workflows/two-minute-counter.yml
+  workflow_dispatch:
+    inputs:
+      counter:
+        description: The counter for this execution
+        required: false
+        type: string
+        default: '1'
+
+permissions:
+  actions: write
+  contents: read
+
+jobs:
+  advance:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - name: Record this execution
+        shell: bash
+        env:
+          COUNTER: ${{ inputs.counter || '1' }}
+        run: |
+          set -euo pipefail
+          if ! [[ "$COUNTER" =~ ^[1-6]$ ]]; then
+            echo "Invalid counter: $COUNTER"
+            exit 1
+          fi
+          echo "Execution $COUNTER of 6 at $(date -u '+%Y-%m-%dT%H:%M:%SZ')"
+          echo "### Counter: $COUNTER of 6" >> "$GITHUB_STEP_SUMMARY"
+          echo "Executed at $(date -u '+%Y-%m-%dT%H:%M:%SZ')" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Trigger the next execution after two minutes
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          COUNTER: ${{ inputs.counter || '1' }}
+        run: |
+          set -euo pipefail
+          if (( COUNTER >= 6 )); then
+            echo "Reached the six-execution test limit. No further run will be scheduled." | tee -a "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+          echo "Waiting 120 seconds before requesting the next execution."
+          sleep 120
+          NEXT=$((COUNTER + 1))
+          gh api -X POST \
+            "repos/${GITHUB_REPOSITORY}/actions/workflows/two-minute-counter.yml/dispatches" \
+            -f "ref=${GITHUB_REF_NAME}" \
+            -f "inputs[counter]=$NEXT"
+          echo "Dispatched counter $NEXT after 120 seconds." | tee -a "$GITHUB_STEP_SUMMARY"
